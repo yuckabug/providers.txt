@@ -1,0 +1,33 @@
+name: update-readme
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "drafts/draft-*.md"
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+
+      # Find the latest draft and copy it to README.md
+      - name: update README
+        run: |
+          LATEST_DRAFT=$(ls -t drafts/draft-*.md | head -1)
+          cp "$LATEST_DRAFT" README.md
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+      # Commit and push the changes
+      - name: commit and push
+        run: |
+          git add README.md
+          if git commit -m "Update README to latest draft"; then
+            git push
+          else
+            echo "No changes to commit"
+          fi
